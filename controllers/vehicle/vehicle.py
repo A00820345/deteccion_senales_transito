@@ -21,6 +21,8 @@
 #         - ←/→   girar
 #         - A     screenshot
 #         - P     pausa/reanuda la deteccion (no la simulacion)
+#         - O     auto-avance ON/OFF (velocidad de crucero constante para grabar
+#                 el video con las manos libres; el giro sigue siendo manual)
 #
 #  IMPORTANTE: el vehiculo arranca en el carril DERECHO, sin tocar la linea
 #  amarilla central — la posicion inicial del BmwX5 en
@@ -87,6 +89,10 @@ MAX_SPEED = 80
 SPEED_INCR = 5
 ANGLE_INCR = 0.05
 
+# Velocidad de crucero del modo auto-avance (tecla O). Se elige moderada (30 km/h)
+# para poder seguir el camino y girar comodamente mientras se graba el video.
+CRUISE_SPEED = 30
+
 # Umbral de confianza de la CNN para reportar una señal.
 # Se elige alto (0.90) porque las señales del simulador son menos
 # variables que las del GTSRB y un umbral bajo genera falsos positivos
@@ -147,8 +153,14 @@ def extract_roi(frame_bgr):
 # =============================================================================
 # HUD - dibujar caja y texto sobre el frame
 # =============================================================================
-def draw_hud(frame_bgr, roi_box, sign_name, confidence, paused):
+def draw_hud(frame_bgr, roi_box, sign_name, confidence, paused, speed=0, auto_forward=False):
     x1, y1, x2, y2 = roi_box
+
+    # Indicador de modo y velocidad (esquina superior izquierda)
+    mode = "AUTO" if auto_forward else "MANUAL"
+    mode_color = (0, 165, 255) if auto_forward else (200, 200, 200)
+    cv2.putText(frame_bgr, f"{mode}  {speed:>2} km/h", (10, 18),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, mode_color, 1, cv2.LINE_AA)
 
     color = (0, 200, 0) if sign_name else (160, 160, 160)
     cv2.rectangle(frame_bgr, (x1, y1), (x2, y2), color, 2)
@@ -193,6 +205,7 @@ def main():
     angle = 0.0
     last_press = {}
     detection_paused = False
+    auto_forward = False  # modo auto-avance (tecla O)
 
     driver = Car()
     timestep = int(driver.getBasicTimeStep())
@@ -216,7 +229,7 @@ def main():
 
     print(f"[vehicle] Controlador iniciado. Confianza min = {CONFIDENCE_THRESHOLD}.")
     print(f"[vehicle] {len(SIGN_NAMES)} clases registradas en el detector.")
-    print("[vehicle] Teclas:  UP/DOWN  acelerar/frenar   LEFT/RIGHT  giro   A  screenshot   P  pausa deteccion")
+    print("[vehicle] Teclas:  UP/DOWN  acelerar/frenar   LEFT/RIGHT  giro   A  screenshot   P  pausa deteccion   O  auto-avance")
 
     # Historial de señales detectadas durante la corrida.
     detected_history = []  # list of (timestamp, class_id, name, confidence)
@@ -248,7 +261,8 @@ def main():
             class_id, name, confidence = last_pred
 
         # 4) HUD + display
-        annotated = draw_hud(frame.copy(), roi_box, name, confidence, detection_paused)
+        annotated = draw_hud(frame.copy(), roi_box, name, confidence, detection_paused,
+                             speed=speed, auto_forward=auto_forward)
         push_to_display(display, annotated)
 
         # 5) Teclado (con debounce y debounce-per-key)
@@ -279,6 +293,10 @@ def main():
             elif key == ord('P'):
                 detection_paused = not detection_paused
                 print(f"[vehicle] Deteccion {'PAUSADA' if detection_paused else 'REANUDADA'}")
+            elif key == ord('O'):
+                auto_forward = not auto_forward
+                speed = CRUISE_SPEED if auto_forward else 0
+                print(f"[vehicle] Auto-avance {'ON' if auto_forward else 'OFF'}  (speed -> {speed})")
 
         # 6) Aplicar al vehiculo
         driver.setSteeringAngle(angle)
