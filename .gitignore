@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+
+# Webots logs y archivos temporales
+*.log
+*.tmp
+
+# Dataset (symlink al ZIP local, no commitear)
+training/dataset/
+
+# Modelos de iteraciones internas (sólo committeamos el final)
+training/checkpoints/
