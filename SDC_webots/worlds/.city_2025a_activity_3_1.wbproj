@@ -5,7 +5,7 @@ sceneTreePerspectives: 000000ff00000001000000030000001e000000c0000000fa010000000
 maximizedDockId: -1
 centralWidgetVisible: 1
 orthographicViewHeight: 1
-textFiles: 0 "../../../../Navegación Autónoma/Teams/Actividad 3.1 - Detección de Peatones con SVM/SDC_webots/controllers/supervisor_controller/supervisor_controller.py"
+textFiles: 0 "../../Actividad 3.1 - Detección de Peatones con SVM/SDC_webots/controllers/supervisor_controller/supervisor_controller.py"
 consoles: Console:All:All
 renderingDevicePerspectives: vehicle:camera;1;1;0.0100287;0.0596206
 renderingDevicePerspectives: vehicle:display_image;1;1;0.551143;0.0230352
